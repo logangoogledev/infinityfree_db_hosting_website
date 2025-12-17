@@ -1,0 +1,25 @@
+{
+  "name": "infinityfree/db-hosting-website",
+  "description": "Database hosting website with user authentication",
+  "type": "project",
+  "license": "MIT",
+  "authors": [
+    {
+      "name": "Zachary Fletcher",
+      "email": "fletcher.9f@gmail.com"
+    }
+  ],
+  "require": {
+    "php": ">=7.2.0",
+    "mongodb/mongodb": "^1.14"
+  },
+  "require-dev": {},
+  "autoload": {
+    "psr-4": {
+      "DbHosting\\": "src/"
+    }
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  }
+}

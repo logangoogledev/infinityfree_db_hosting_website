@@ -1,0 +1,21 @@
+# Data directories
+data/
+
+# Configuration files with sensitive data
+config/db.php
+
+# IDE and OS files
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# Composer (if using MongoDB)
+vendor/
+composer.lock
+
+# Logs
+*.log
