@@ -5,11 +5,11 @@ ini_set('display_errors', 1);
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
-    header('Location: ../index.php');
+    header('Location: index.php');
     exit;
 }
 
-require_once '../config/db.php';
+require_once 'config/db.php';
 
 $user_id = $_SESSION['user_id'];
 $db_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
