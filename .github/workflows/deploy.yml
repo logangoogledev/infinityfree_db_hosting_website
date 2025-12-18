@@ -10,11 +10,13 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
-    - name: Upload to FTP
-      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
+    - name: Upload to SFTP
+      uses: wangyucode/sftp-upload-action@v2.0.2
       with:
-        server: ${{ secrets.FTP_SERVER }}
+        host: ${{ secrets.FTP_SERVER }}
+        port: 22
         username: ${{ secrets.FTP_USER }}
         password: ${{ secrets.FTP_PASSWORD }}
-        local-dir: ./
-        server-dir: ./public_html/
+        localDir: './
+        remoteDir: '/public_html/'
+        sftpOnly: true
