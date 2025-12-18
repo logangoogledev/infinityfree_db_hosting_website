@@ -10,12 +10,11 @@ jobs:
     steps:
     - uses: actions/checkout@v3
     
-    - name: Upload to SFTP
-      uses: wangyucode/sftp-upload-action@v2.0.2
+    - name: Upload to FTP
+      uses: SamKirkland/FTP-Deploy-Action@v4.3.4
       with:
-        host: ${{ secrets.FTP_SERVER }}
-        port: 22
+        server: ${{ secrets.FTP_SERVER }}
         username: ${{ secrets.FTP_USER }}
         password: ${{ secrets.FTP_PASSWORD }}
-        localDir: './'
-        remoteDir: '/home/vol1000_6/infinityfree.com/if0_40374989/doom-dbhosting.xo.je/htdocs'
+        local-dir: ./
+        server-dir: ./doom-dbhosting.xo.je/htdocs/
