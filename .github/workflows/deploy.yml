@@ -18,4 +18,4 @@ jobs:
         username: ${{ secrets.FTP_USER }}
         password: ${{ secrets.FTP_PASSWORD }}
         localDir: './'
-        remoteDir: '/doom-dbhosting.xo.je/htdocs'
+        remoteDir: '/home/vol1000_6/infinityfree.com/if0_40374989/doom-dbhosting.xo.je/htdocs'
