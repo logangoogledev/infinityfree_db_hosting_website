@@ -469,3 +469,56 @@ body {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
+/* API Token Section */
+.api-token-section {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 20px;
+    border-radius: 8px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.2);
+}
+
+.api-token-section h3 {
+    margin-bottom: 15px;
+    font-size: 1.2rem;
+}
+
+.token-display {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.token-input {
+    flex: 1;
+    min-width: 250px;
+    padding: 10px 12px;
+    border: 2px solid rgba(255, 255, 255, 0.3);
+    border-radius: 4px;
+    background: rgba(255, 255, 255, 0.1);
+    color: white;
+    font-family: 'Courier New', monospace;
+    font-size: 14px;
+}
+
+.token-input::placeholder {
+    color: rgba(255, 255, 255, 0.6);
+}
+
+.token-note {
+    font-size: 14px;
+    opacity: 0.9;
+    margin-top: 10px;
+}
+
+.token-note a {
+    color: white;
+    text-decoration: underline;
+    cursor: pointer;
+}
+
+.token-note a:hover {
+    opacity: 0.8;
+}

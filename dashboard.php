@@ -46,6 +46,8 @@ $databases = $stmt->get_result();
         <div class="nav-container">
             <div class="nav-brand">DB Hosting</div>
             <div class="nav-menu">
+                <a href="security.php" class="nav-link">🔒 Security</a>
+                <a href="remote-api-guide.php" class="nav-link">📡 API Docs</a>
                 <span class="nav-user">Welcome, <?php echo htmlspecialchars($user['username']); ?></span>
                 <a href="auth/logout.php" class="nav-link">Logout</a>
             </div>
@@ -54,6 +56,16 @@ $databases = $stmt->get_result();
 
     <div class="container">
         <div class="dashboard">
+            <div class="api-token-section">
+                <h3>API Token (for remote connections)</h3>
+                <div class="token-display">
+                    <input type="text" id="tokenInput" value="<?php echo htmlspecialchars($user['email']); ?>" readonly class="token-input">
+                    <button class="btn btn-small" onclick="copyToken()">Copy</button>
+                    <button class="btn btn-small" onclick="toggleTokenVisibility()">Show Details</button>
+                </div>
+                <p class="token-note">Use this token to connect to your databases remotely. <a href="remote-api-guide.php">View API documentation</a></p>
+            </div>
+
             <div class="dashboard-header">
                 <h1>Your Databases</h1>
                 <button class="btn btn-primary" onclick="openModal('newDbModal')">+ Create Database</button>
@@ -136,6 +148,18 @@ $databases = $stmt->get_result();
                     }
                 });
             }
+        }
+
+        function copyToken() {
+            const tokenInput = document.getElementById('tokenInput');
+            tokenInput.select();
+            document.execCommand('copy');
+            alert('Token copied to clipboard!');
+        }
+
+        function toggleTokenVisibility() {
+            // Open the remote API guide in a new tab
+            window.open('remote-api-guide.php', '_blank');
         }
     </script>
 </body>
