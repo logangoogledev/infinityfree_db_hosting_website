@@ -12,7 +12,7 @@ $db_id = isset($data['id']) ? intval($data['id']) : 0;
 $user_id = $_SESSION['user_id'];
 
 // Verify database belongs to user
-$verify_query = "SELECT id FROM databases WHERE id = ? AND user_id = ?";
+$verify_query = "SELECT id FROM `databases` WHERE id = ? AND user_id = ?";
 $stmt = $conn->prepare($verify_query);
 $stmt->bind_param("ii", $db_id, $user_id);
 $stmt->execute();
@@ -24,7 +24,7 @@ if ($result->num_rows === 0) {
 }
 
 // Delete from database
-$delete_query = "DELETE FROM databases WHERE id = ? AND user_id = ?";
+$delete_query = "DELETE FROM `databases` WHERE id = ? AND user_id = ?";
 $stmt = $conn->prepare($delete_query);
 $stmt->bind_param("ii", $db_id, $user_id);
 

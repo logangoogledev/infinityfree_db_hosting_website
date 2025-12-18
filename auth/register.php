@@ -27,64 +27,31 @@ if ($password !== $confirm_password) {
     exit;
 }
 
+// Check if email already exists
+$check_query = "SELECT id FROM users WHERE email = ?";
+$stmt = $conn->prepare($check_query);
+$stmt->bind_param("s", $email);
+$stmt->execute();
+$check_result = $stmt->get_result();
+
+if ($check_result->num_rows > 0) {
+    header('Location: ../index.php?error=Email already registered');
+    exit;
+}
+
 // Hash password
 $hashed_password = password_hash($password, PASSWORD_BCRYPT);
 
-if (isUsingMongoDB()) {
-    // MongoDB registration
-    try {
-        // Check if email already exists
-        $existing = $usersCollection->findOne(['email' => $email]);
-        if ($existing) {
-            header('Location: ../index.php?error=Email already registered');
-            exit;
-        }
+// Insert user
+$insert_query = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
+$stmt = $conn->prepare($insert_query);
+$stmt->bind_param("sss", $username, $email, $hashed_password);
 
-        // Insert new user
-        $result = $usersCollection->insertOne([
-            'username' => $username,
-            'email' => $email,
-            'password' => $hashed_password,
-            'created_at' => new MongoDB\BSON\UTCDateTime(),
-            'updated_at' => new MongoDB\BSON\UTCDateTime()
-        ]);
-
-        if ($result->getInsertedId()) {
-            header('Location: ../index.php?success=Account created! You can now login');
-            exit;
-        } else {
-            header('Location: ../index.php?error=Registration failed. Please try again');
-            exit;
-        }
-    } catch (Exception $e) {
-        header('Location: ../index.php?error=Registration failed: ' . $e->getMessage());
-        exit;
-    }
+if ($stmt->execute()) {
+    header('Location: ../index.php?success=Account created! You can now login');
+    exit;
 } else {
-    // MySQL registration
-    // Check if email already exists
-    $check_query = "SELECT id FROM users WHERE email = ?";
-    $stmt = $conn->prepare($check_query);
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $check_result = $stmt->get_result();
-
-    if ($check_result->num_rows > 0) {
-        header('Location: ../index.php?error=Email already registered');
-        exit;
-    }
-
-    // Insert user
-    $insert_query = "INSERT INTO users (username, email, password) VALUES (?, ?, ?)";
-    $stmt = $conn->prepare($insert_query);
-    $stmt->bind_param("sss", $username, $email, $hashed_password);
-
-    if ($stmt->execute()) {
-        header('Location: ../index.php?success=Account created! You can now login');
-        exit;
-    } else {
-        header('Location: ../index.php?error=Registration failed. Please try again');
-        exit;
-    }
+    header('Location: ../index.php?error=Registration failed. Please try again');
+    exit;
 }
 ?>

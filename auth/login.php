@@ -16,55 +16,29 @@ if (empty($email) || empty($password)) {
     exit;
 }
 
-if (isUsingMongoDB()) {
-    // MongoDB login
-    try {
-        $user = $usersCollection->findOne(['email' => $email]);
-        
-        if (!$user) {
-            header('Location: ../index.php?error=Invalid email or password');
-            exit;
-        }
-        
-        // Verify password
-        if (!password_verify($password, $user['password'])) {
-            header('Location: ../index.php?error=Invalid email or password');
-            exit;
-        }
-        
-        // Set session
-        $_SESSION['user_id'] = (string)$user['_id'];  // Convert ObjectId to string
-        $_SESSION['username'] = $user['username'];
-    } catch (Exception $e) {
-        header('Location: ../index.php?error=Login failed: ' . $e->getMessage());
-        exit;
-    }
-} else {
-    // MySQL login
-    // Query user
-    $query = "SELECT id, username, password FROM users WHERE email = ?";
-    $stmt = $conn->prepare($query);
-    $stmt->bind_param("s", $email);
-    $stmt->execute();
-    $result = $stmt->get_result();
+// Query user
+$query = "SELECT id, username, password FROM users WHERE email = ?";
+$stmt = $conn->prepare($query);
+$stmt->bind_param("s", $email);
+$stmt->execute();
+$result = $stmt->get_result();
 
-    if ($result->num_rows === 0) {
-        header('Location: ../index.php?error=Invalid email or password');
-        exit;
-    }
-
-    $user = $result->fetch_assoc();
-
-    // Verify password
-    if (!password_verify($password, $user['password'])) {
-        header('Location: ../index.php?error=Invalid email or password');
-        exit;
-    }
-
-    // Set session
-    $_SESSION['user_id'] = $user['id'];
-    $_SESSION['username'] = $user['username'];
+if ($result->num_rows === 0) {
+    header('Location: ../index.php?error=Invalid email or password');
+    exit;
 }
+
+$user = $result->fetch_assoc();
+
+// Verify password
+if (!password_verify($password, $user['password'])) {
+    header('Location: ../index.php?error=Invalid email or password');
+    exit;
+}
+
+// Set session
+$_SESSION['user_id'] = $user['id'];
+$_SESSION['username'] = $user['username'];
 
 header('Location: ../dashboard.php');
 exit;

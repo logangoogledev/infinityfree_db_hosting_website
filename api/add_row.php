@@ -11,7 +11,7 @@ $user_id = $_SESSION['user_id'];
 $db_id = isset($_POST['db_id']) ? intval($_POST['db_id']) : 0;
 
 // Verify database belongs to user
-$verify_query = "SELECT id FROM databases WHERE id = ? AND user_id = ?";
+$verify_query = "SELECT id FROM `databases` WHERE id = ? AND user_id = ?";
 $stmt = $conn->prepare($verify_query);
 $stmt->bind_param("ii", $db_id, $user_id);
 $stmt->execute();

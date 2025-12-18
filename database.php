@@ -12,7 +12,7 @@ $user_id = $_SESSION['user_id'];
 $db_id = isset($_GET['id']) ? intval($_GET['id']) : 0;
 
 // Verify the database belongs to the user
-$verify_query = "SELECT id, name FROM databases WHERE id = ? AND user_id = ?";
+$verify_query = "SELECT id, name FROM `databases` WHERE id = ? AND user_id = ?";
 $stmt = $conn->prepare($verify_query);
 $stmt->bind_param("ii", $db_id, $user_id);
 $stmt->execute();

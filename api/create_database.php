@@ -16,7 +16,7 @@ if (empty($db_name)) {
 }
 
 // Create database record
-$query = "INSERT INTO databases (user_id, name) VALUES (?, ?)";
+$query = "INSERT INTO `databases` (user_id, name) VALUES (?, ?)";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("is", $user_id, $db_name);
 

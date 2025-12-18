@@ -11,49 +11,26 @@ require_once 'config/db.php';
 
 $user_id = $_SESSION['user_id'];
 
-if (isUsingMongoDB()) {
-    // MongoDB dashboard
-    try {
-        $user = $usersCollection->findOne(['_id' => new MongoDB\BSON\ObjectId($user_id)]);
-        if (!$user) {
-            header('Location: index.php');
-            exit;
-        }
-        
-        $databases = iterator_to_array($databasesCollection->find(
-            ['user_id' => $user_id],
-            ['sort' => ['created_at' => -1]]
-        ));
-        
-        $username = $user['username'];
-    } catch (Exception $e) {
-        header('Location: index.php');
-        exit;
-    }
-} else {
-    // MySQL dashboard
-    // Get user info
-    $user_query = "SELECT username, email FROM users WHERE id = ?";
-    $stmt = $conn->prepare($user_query);
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $user_result = $stmt->get_result();
-    
-    if ($user_result->num_rows == 0) {
-        header('Location: index.php');
-        exit;
-    }
-    
-    $user = $user_result->fetch_assoc();
-    $username = $user['username'];
+// Get user info
+$user_query = "SELECT username, email FROM users WHERE id = ?";
+$stmt = $conn->prepare($user_query);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$user_result = $stmt->get_result();
 
-    // Get user's databases
-    $db_query = "SELECT id, name, created_at FROM databases WHERE user_id = ? ORDER BY created_at DESC";
-    $stmt = $conn->prepare($db_query);
-    $stmt->bind_param("i", $user_id);
-    $stmt->execute();
-    $databases = $stmt->get_result();
+if ($user_result->num_rows == 0) {
+    header('Location: index.php');
+    exit;
 }
+
+$user = $user_result->fetch_assoc();
+
+// Get user's databases
+$db_query = "SELECT id, name, created_at FROM `databases` WHERE user_id = ? ORDER BY created_at DESC";
+$stmt = $conn->prepare($db_query);
+$stmt->bind_param("i", $user_id);
+$stmt->execute();
+$databases = $stmt->get_result();
 ?>
 <!DOCTYPE html>
 <html lang="en">
@@ -82,33 +59,22 @@ if (isUsingMongoDB()) {
             </div>
 
             <div class="databases-grid">
-                <?php 
-                if (isUsingMongoDB()) {
-                    foreach ($databases as $db): ?>
-                        <div class="database-card">
-                            <h3><?php echo htmlspecialchars($db['name']); ?></h3>
-                            <p class="db-id">ID: <?php echo htmlspecialchars((string)$db['_id']); ?></p>
-                            <p class="db-date">Created: <?php echo $db['created_at']->toDateTime()->format('Y-m-d H:i'); ?></p>
-                            <div class="card-actions">
-                                <a href="database.php?id=<?php echo (string)$db['_id']; ?>" class="btn btn-small">View</a>
-                                <button class="btn btn-small btn-danger" onclick="deleteDatabase('<?php echo (string)$db['_id']; ?>')">Delete</button>
-                            </div>
+                <?php while ($db = $databases->fetch_assoc()): ?>
+                    <div class="database-card">
+                        <h3><?php echo htmlspecialchars($db['name']); ?></h3>
+                        <p class="db-id">ID: <?php echo htmlspecialchars($db['id']); ?></p>
+                        <p class="db-date">Created: <?php echo date('Y-m-d H:i', strtotime($db['created_at'])); ?></p>
+                        <div class="card-actions">
+                            <a href="database.php?id=<?php echo $db['id']; ?>" class="btn btn-small">View</a>
+                            <button class="btn btn-small btn-danger" onclick="deleteDatabase(<?php echo $db['id']; ?>)">Delete</button>
                         </div>
-                    <?php endforeach;
-                } else {
-                    while ($db = $databases->fetch_assoc()): ?>
-                        <div class="database-card">
-                            <h3><?php echo htmlspecialchars($db['name']); ?></h3>
-                            <p class="db-id">ID: <?php echo htmlspecialchars($db['id']); ?></p>
-                            <p class="db-date">Created: <?php echo date('Y-m-d H:i', strtotime($db['created_at'])); ?></p>
-                            <div class="card-actions">
-                                <a href="database.php?id=<?php echo $db['id']; ?>" class="btn btn-small">View</a>
-                                <button class="btn btn-small btn-danger" onclick="deleteDatabase(<?php echo $db['id']; ?>)">Delete</button>
-                            </div>
-                        </div>
-                    <?php endwhile;
-                }
-                ?>
+                    </div>
+                <?php endwhile; ?>
+            </div>
+
+            <?php if ($databases->num_rows == 0): ?>
+                <p class="no-databases">No databases yet. Create one to get started!</p>
+            <?php endif; ?>
         </div>
     </div>
 
