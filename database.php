@@ -188,37 +188,51 @@ if (file_exists($csv_path)) {
         // Generate form fields for adding rows
         function populateFormFields() {
             const container = document.getElementById('formFields');
-            
-            // Use schema if available, otherwise use CSV headers
-            const fields = schemaColumns.length > 0 ? schemaColumns : 
-                           (headers.length > 0 ? headers.map(h => ({name: h, type: 'text'})) : []);
-            
             container.innerHTML = ''; // Clear existing fields
             
-            fields.forEach(field => {
-                const fieldName = field.name || field;
-                const fieldType = field.type || 'text';
+            // Use schema if available, otherwise use CSV headers
+            let fields = [];
+            if (schemaColumns && schemaColumns.length > 0) {
+                fields = schemaColumns;
+            } else if (headers && headers.length > 0) {
+                fields = headers.map(h => {
+                    if (typeof h === 'object') return h;
+                    return {name: h, type: 'text'};
+                });
+            }
+            
+            if (fields.length === 0) {
+                container.innerHTML = '<p>No columns defined. Create columns in the Columns tab first.</p>';
+                return;
+            }
+            
+            fields.forEach((field, idx) => {
+                // Handle both object and string formats
+                const fieldName = (typeof field === 'object' ? field.name : field) || `field_${idx}`;
+                const fieldType = (typeof field === 'object' ? field.type : 'text') || 'text';
                 
                 const group = document.createElement('div');
                 group.className = 'form-group';
                 
                 let inputHTML = '';
+                const sanitizedName = fieldName.replace(/[^a-zA-Z0-9_-]/g, '_');
+                
                 if (fieldType === 'date') {
-                    inputHTML = `<input type="date" name="${fieldName}" required>`;
+                    inputHTML = `<input type="date" name="${sanitizedName}" required>`;
                 } else if (fieldType === 'email') {
-                    inputHTML = `<input type="email" name="${fieldName}" required>`;
+                    inputHTML = `<input type="email" name="${sanitizedName}" required>`;
                 } else if (fieldType === 'integer') {
-                    inputHTML = `<input type="number" step="1" name="${fieldName}" required>`;
+                    inputHTML = `<input type="number" step="1" name="${sanitizedName}" required>`;
                 } else if (fieldType === 'decimal') {
-                    inputHTML = `<input type="number" step="0.01" name="${fieldName}" required>`;
+                    inputHTML = `<input type="number" step="0.01" name="${sanitizedName}" required>`;
                 } else if (fieldType === 'url') {
-                    inputHTML = `<input type="url" name="${fieldName}" required>`;
+                    inputHTML = `<input type="url" name="${sanitizedName}" required>`;
                 } else {
-                    inputHTML = `<input type="text" name="${fieldName}" required>`;
+                    inputHTML = `<input type="text" name="${sanitizedName}" required>`;
                 }
                 
                 group.innerHTML = `
-                    <label for="field-${fieldName}">${fieldName} (${fieldType}):</label>
+                    <label for="field-${sanitizedName}">${fieldName} <span class="type-hint">(${fieldType})</span>:</label>
                     ${inputHTML}
                 `;
                 container.appendChild(group);
@@ -226,9 +240,7 @@ if (file_exists($csv_path)) {
         }
 
         // Initialize form on page load
-        if (schemaColumns.length > 0 || headers.length > 0) {
-            populateFormFields();
-        }
+        populateFormFields();
 
         document.getElementById('uploadForm').addEventListener('submit', function(e) {
             e.preventDefault();

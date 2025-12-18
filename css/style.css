@@ -447,6 +447,12 @@ body {
     background: #f8f9fa;
 }
 
+.type-hint {
+    font-size: 0.85rem;
+    color: #6c757d;
+    font-weight: 400;
+}
+
 .btn-secondary {
     background: #6c757d;
     color: white;
