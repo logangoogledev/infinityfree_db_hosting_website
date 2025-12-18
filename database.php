@@ -183,22 +183,50 @@ if (file_exists($csv_path)) {
     <script src="js/script.js"></script>
     <script>
         const headers = <?php echo json_encode(count($data) > 0 ? $data[0] : []); ?>;
+        const schemaColumns = <?php echo json_encode($schema); ?>;
 
         // Generate form fields for adding rows
         function populateFormFields() {
             const container = document.getElementById('formFields');
-            headers.forEach(header => {
+            
+            // Use schema if available, otherwise use CSV headers
+            const fields = schemaColumns.length > 0 ? schemaColumns : 
+                           (headers.length > 0 ? headers.map(h => ({name: h, type: 'text'})) : []);
+            
+            container.innerHTML = ''; // Clear existing fields
+            
+            fields.forEach(field => {
+                const fieldName = field.name || field;
+                const fieldType = field.type || 'text';
+                
                 const group = document.createElement('div');
                 group.className = 'form-group';
+                
+                let inputHTML = '';
+                if (fieldType === 'date') {
+                    inputHTML = `<input type="date" name="${fieldName}" required>`;
+                } else if (fieldType === 'email') {
+                    inputHTML = `<input type="email" name="${fieldName}" required>`;
+                } else if (fieldType === 'integer') {
+                    inputHTML = `<input type="number" step="1" name="${fieldName}" required>`;
+                } else if (fieldType === 'decimal') {
+                    inputHTML = `<input type="number" step="0.01" name="${fieldName}" required>`;
+                } else if (fieldType === 'url') {
+                    inputHTML = `<input type="url" name="${fieldName}" required>`;
+                } else {
+                    inputHTML = `<input type="text" name="${fieldName}" required>`;
+                }
+                
                 group.innerHTML = `
-                    <label for="field-${header}">${header}:</label>
-                    <input type="text" id="field-${header}" name="${header}" required>
+                    <label for="field-${fieldName}">${fieldName} (${fieldType}):</label>
+                    ${inputHTML}
                 `;
                 container.appendChild(group);
             });
         }
 
-        if (headers.length > 0) {
+        // Initialize form on page load
+        if (schemaColumns.length > 0 || headers.length > 0) {
             populateFormFields();
         }
 

@@ -23,6 +23,13 @@ if ($result->num_rows === 0) {
 }
 
 $csv_path = "../data/user_{$user_id}/database_{$db_id}.csv";
+$schema_path = "../data/user_{$user_id}/database_{$db_id}_schema.json";
+
+// Read schema if exists
+$schema = [];
+if (file_exists($schema_path)) {
+    $schema = json_decode(file_get_contents($schema_path), true);
+}
 
 // Read existing data or initialize with headers
 $data = [];
@@ -35,16 +42,23 @@ if (file_exists($csv_path)) {
     }
 }
 
-// Get headers from POST data
-$headers = array_keys($_POST);
-$headers = array_filter($headers, function($h) { return $h !== 'db_id'; });
+// Get column order from schema or POST data
+$headers = [];
+if (!empty($schema)) {
+    // Use schema column names
+    $headers = array_map(function($col) { return $col['name']; }, $schema);
+} else {
+    // Fall back to POST data keys
+    $headers = array_keys($_POST);
+    $headers = array_filter($headers, function($h) { return $h !== 'db_id'; });
+}
 
 // If no data, create headers row
 if (empty($data)) {
     $data[] = $headers;
 }
 
-// Create new row from POST data
+// Create new row from POST data in correct order
 $newRow = [];
 foreach ($headers as $header) {
     $newRow[] = isset($_POST[$header]) ? $_POST[$header] : '';
