@@ -5,6 +5,7 @@ ini_set('display_errors', 1);
 session_start();
 
 if (!isset($_SESSION['user_id'])) {
+    http_response_code(401);
     header('Location: index.php');
     exit;
 }
@@ -22,6 +23,7 @@ $stmt->execute();
 $db_result = $stmt->get_result();
 
 if ($db_result->num_rows == 0) {
+    http_response_code(404);
     header('Location: dashboard.php');
     exit;
 }
