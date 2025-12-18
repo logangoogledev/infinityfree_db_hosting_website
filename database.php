@@ -75,7 +75,7 @@ if (file_exists($csv_path)) {
                         <thead>
                             <tr>
                                 <?php foreach ($data[0] as $header): ?>
-                                    <th><?php echo htmlspecialchars($header); ?></th>
+                                    <th><?php echo htmlspecialchars($header ?? ''); ?></th>
                                 <?php endforeach; ?>
                                 <th>Actions</th>
                             </tr>
@@ -84,7 +84,7 @@ if (file_exists($csv_path)) {
                             <?php for ($i = 1; $i < count($data); $i++): ?>
                                 <tr>
                                     <?php foreach ($data[$i] as $cell): ?>
-                                        <td><?php echo htmlspecialchars($cell); ?></td>
+                                        <td><?php echo htmlspecialchars($cell ?? ''); ?></td>
                                     <?php endforeach; ?>
                                     <td>
                                         <button class="btn btn-small btn-danger" onclick="deleteRow(<?php echo $i; ?>)">Delete</button>
