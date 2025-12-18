@@ -28,7 +28,14 @@ if ($db_result->num_rows == 0) {
 
 $database = $db_result->fetch_assoc();
 $csv_path = "data/user_{$user_id}/database_{$db_id}.csv";
+$schema_path = "data/user_{$user_id}/database_{$db_id}_schema.json";
 $data = [];
+$schema = [];
+
+// Load schema if exists
+if (file_exists($schema_path)) {
+    $schema = json_decode(file_get_contents($schema_path), true);
+}
 
 // Read CSV file if it exists
 if (file_exists($csv_path)) {
@@ -66,6 +73,7 @@ if (file_exists($csv_path)) {
                 <div class="header-actions">
                     <button class="btn btn-primary" onclick="openModal('uploadModal')">Upload CSV</button>
                     <button class="btn btn-primary" onclick="openModal('addRowModal')">Add Row</button>
+                    <button class="btn btn-secondary" onclick="openModal('columnsModal')">Columns</button>
                 </div>
             </div>
 
@@ -74,9 +82,19 @@ if (file_exists($csv_path)) {
                     <table class="data-table">
                         <thead>
                             <tr>
-                                <?php foreach ($data[0] as $header): ?>
-                                    <th><?php echo htmlspecialchars($header ?? ''); ?></th>
-                                <?php endforeach; ?>
+                                <?php 
+                                if (count($schema) > 0) {
+                                    foreach ($schema as $col): ?>
+                                        <th>
+                                            <?php echo htmlspecialchars($col['name']); ?>
+                                            <span class="type-badge"><?php echo htmlspecialchars($col['type']); ?></span>
+                                        </th>
+                                    <?php endforeach;
+                                } elseif (count($data) > 0) {
+                                    foreach ($data[0] as $header): ?>
+                                        <th><?php echo htmlspecialchars($header ?? ''); ?></th>
+                                    <?php endforeach;
+                                } ?>
                                 <th>Actions</th>
                             </tr>
                         </thead>
@@ -125,6 +143,39 @@ if (file_exists($csv_path)) {
                 <input type="hidden" name="db_id" value="<?php echo $db_id; ?>">
                 <div id="formFields"></div>
                 <button type="submit" class="btn">Add Row</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Columns Modal -->
+    <div id="columnsModal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal('columnsModal')">&times;</span>
+            <h2>Manage Columns</h2>
+            
+            <div id="schemaList" class="schema-list">
+                <!-- Populated by JavaScript -->
+            </div>
+
+            <hr style="margin: 20px 0;">
+            <h3>Add New Column</h3>
+            <form id="addColumnForm">
+                <div class="form-group">
+                    <label for="col-name">Column Name:</label>
+                    <input type="text" id="col-name" name="name" required>
+                </div>
+                <div class="form-group">
+                    <label for="col-type">Data Type:</label>
+                    <select id="col-type" name="type">
+                        <option value="text">Text</option>
+                        <option value="integer">Integer</option>
+                        <option value="decimal">Decimal</option>
+                        <option value="date">Date</option>
+                        <option value="email">Email</option>
+                        <option value="url">URL</option>
+                    </select>
+                </div>
+                <button type="submit" class="btn">Add Column</button>
             </form>
         </div>
     </div>
@@ -209,6 +260,93 @@ if (file_exists($csv_path)) {
                 });
             }
         }
+
+        // Schema/Column Management
+        const schema = <?php echo json_encode($schema); ?>;
+        const dbId = <?php echo $db_id; ?>;
+
+        function loadSchema() {
+            fetch('api/manage_columns.php?db_id=' + dbId)
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displaySchema(data.schema);
+                    }
+                });
+        }
+
+        function displaySchema(schemaData) {
+            const list = document.getElementById('schemaList');
+            list.innerHTML = '';
+            
+            if (schemaData.length === 0) {
+                list.innerHTML = '<p>No columns defined yet. Add one to get started!</p>';
+                return;
+            }
+
+            const table = document.createElement('table');
+            table.className = 'schema-table';
+            table.innerHTML = '<tr><th>Column Name</th><th>Type</th><th>Action</th></tr>';
+            
+            schemaData.forEach((col, index) => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${col.name}</td>
+                    <td><span class="type-badge">${col.type}</span></td>
+                    <td><button class="btn btn-small btn-danger" onclick="deleteColumn(${index})">Delete</button></td>
+                `;
+                table.appendChild(row);
+            });
+            
+            list.appendChild(table);
+        }
+
+        function deleteColumn(index) {
+            if (confirm('Delete this column? This cannot be undone.')) {
+                const formData = new FormData();
+                formData.append('db_id', dbId);
+                formData.append('action', 'delete_column');
+                formData.append('index', index);
+
+                fetch('api/manage_columns.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        displaySchema(data.schema);
+                    } else {
+                        alert('Error: ' + data.error);
+                    }
+                });
+            }
+        }
+
+        // Add column form
+        document.getElementById('addColumnForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            formData.append('db_id', dbId);
+            formData.append('action', 'add_column');
+
+            fetch('api/manage_columns.php', {
+                method: 'POST',
+                body: formData
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    this.reset();
+                    displaySchema(data.schema);
+                } else {
+                    alert('Error: ' + data.error);
+                }
+            });
+        });
+
+        // Load schema on page load
+        loadSchema();
     </script>
 </body>
 </html>
